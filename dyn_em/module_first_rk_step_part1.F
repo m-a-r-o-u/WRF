@@ -968,6 +968,12 @@ BENCH_START(surf_driver_tim)
      &        ,spp_lsm=config_flags%spp_lsm,pattern_spp_lsm=grid%pattern_spp_lsm     & !SPP
      &        ,field_sf=grid%field_sf                                                & !SPP
      &        ,spp_pbl=config_flags%spp_pbl,pattern_spp_pbl=grid%pattern_spp_pbl     & !SPP
+     &        ,lu_index=grid%lu_index                                     &
+     &        ,tidal_update=grid%tidal_update                             &
+     &        ,tidal_mask=grid%tidal_mask                                 &
+     &        ,iswetland=grid%iswetland                                   &
+     &        ,landmask=grid%landmask                                     &
+     &        ,ssh=grid%ssh                                               &
      &                                                           )
 
 #ifdef WRF_HYDRO

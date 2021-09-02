@@ -317,7 +317,13 @@ CONTAINS
      &          ,irrigation,sf_surf_irr_scheme, irr_daily_amount      & !IRRIG
      &          ,irr_start_hour,irr_num_hours,irr_start_julianday     &
      &          ,irr_end_julianday,irr_freq,irr_ph,irr_rand_field     &
-     &                                                             )
+     &          ,lu_index                                             &
+     &          ,tidal_update                                         &
+     &          ,tidal_mask                                           &
+     &          ,iswetland                                            &
+     &          ,landmask                                             &
+     &          ,ssh                                                  &
+     &                                                                )
 
 #if ( ! NMM_CORE == 1 )
    USE module_state_description, ONLY : SFCLAYSCHEME              &
@@ -1071,6 +1077,15 @@ CONTAINS
    INTEGER, OPTIONAL, INTENT(IN)    :: pxlsm_smois_init, pxlsm_soil_nudge,  &
                                        ANAL_INTERVAL, pxlsm_modis_veg
 
+   INTEGER, OPTIONAL, INTENT(IN ):: tidal_update
+   INTEGER, OPTIONAL, INTENT(IN ):: iswetland
+
+   INTEGER, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: tidal_mask
+
+   REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: lu_index
+   REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: landmask
+   REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: ssh
+
    REAL, DIMENSION( ims:ime, NLCAT, jms:jme ) , OPTIONAL, INTENT(INOUT)::   LANDUSEF
    REAL, DIMENSION( ims:ime, NSCAT, jms:jme ) , OPTIONAL, INTENT(INOUT)::   SOILCTOP, SOILCBOT
    REAL, DIMENSION( ims:ime , jms:jme ), OPTIONAL, INTENT(INOUT):: IMPERV, CANFRA
@@ -1638,6 +1653,64 @@ CONTAINS
     ENDDO
     !$OMP END PARALLEL DO
   ENDIF
+
+
+!!!!!!!!!! work by Mares Barekzai on tidal_update
+  IF (tidal_update .eq. 1) THEN
+    CALL wrf_debug( 100, 'TIDAL_UPDATE is on' )
+    DO ij = 1 , num_tiles
+      DO j=j_start(ij),j_end(ij)
+      DO i=i_start(ij),i_end(ij)
+        if(tidal_mask(i,j) .eq. 1) then
+          if(ssh(i,j) .ge. 0) then
+            ! turn into ocean pixel
+            LANDMASK(i,j) = 0
+            XLAND(i,j) = 2
+            LU_INDEX(i,j) = iswater
+            IVGTYP(i,j) = iswater
+            VEGFRA(i,j) = 0
+            ISLTYP(i,j) = 14
+            ALBEDO(i,j) = 0.08
+            ALBBCK(i,j) = 0.08
+            EMISS(i,j) = 0.98
+            EMBCK(i,j) = 0.98
+            Z0(i,j) = 1.e-4
+            MAVAIL(i,j) = 1
+            DO nk = 1, num_soil_layers
+              TSLB(i,nk,j) = SST(i,j)
+              SMOIS(i,nk,j) = 1
+              SH2O(i,nk,j) = 1
+            ENDDO
+            TMN(i,j) = SST(i,j)
+            TSK(i,j) = SST(i,j)
+          else if(ssh(i,j) .lt. 0) then
+            ! turn into land pixel
+            LANDMASK(i,j) = 1
+            XLAND(i,j) = 1
+            LU_INDEX(i,j) = iswetland
+            IVGTYP(i,j) = iswetland
+            VEGFRA(i,j) = 81.58
+            ISLTYP(i,j) = 9
+            ALBEDO(i,j) = 0.14
+            ALBBCK(i,j) = 0.17
+            EMISS(i,j) = 0.95
+            EMBCK(i,j) = 0.95
+            Z0(i,j) = 0.2
+            MAVAIL(i,j) = 0.6
+            DO nk = 1, num_soil_layers
+              !TSLB(i,nk,j) = SST(i,j)
+              SMOIS(i,nk,j) = 0.14
+              SH2O(i,nk,j) = 0.14
+            ENDDO
+            !TMN(i,j) = SST(i,j)
+            !TSK(i,j) = SST(i,j)
+          endif
+        endif
+      ENDDO ! i
+      ENDDO ! j
+    ENDDO ! ij
+  ENDIF ! tidal_update
+
 ! Update SST
   IF (sst_update .EQ. 1) THEN
     CALL wrf_debug( 100, 'SST_UPDATE is on' )
