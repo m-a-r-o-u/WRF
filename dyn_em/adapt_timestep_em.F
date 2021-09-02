@@ -47,7 +47,7 @@ RECURSIVE SUBROUTINE adapt_timestep(grid, config_flags)
   TYPE(WRFU_TimeInterval)                    :: last_dtInterval
   REAL                                       :: real_time
   REAL                                       :: max_vert_cfl, max_horiz_cfl
-
+  real :: bc_interval
   !
   ! If use_last2 is true, this routine will use the time step
   !   from 2 steps ago to compute the next time step.  This
@@ -282,6 +282,9 @@ RECURSIVE SUBROUTINE adapt_timestep(grid, config_flags)
   !   when this is not the first time step on this domain.
   !
 
+  bc_interval = min(grid%interval_seconds, config_flags%auxinput4_interval*60)
+  write(*,*) '*** bc_interval, interval_seconds, auxinput4_interval', bc_interval, grid%interval_seconds, config_flags%auxinput4_interval
+
   grid%stepping_to_time = .FALSE.
   time_to_bc = grid%interval_seconds - grid%dtbc
   num = INT(time_to_bc * precision + 0.5)
@@ -298,8 +301,9 @@ RECURSIVE SUBROUTINE adapt_timestep(grid, config_flags)
      
   elseif (tmpTimeInterval .LE. dtInterval) then
      
-     bc_time = NINT ( (curr_secs + time_to_bc) / ( grid%interval_seconds ) ) &
-          * ( grid%interval_seconds )
+     !bc_time = NINT ( (curr_secs + time_to_bc) / ( grid%interval_seconds ) ) &
+     !   * ( grid%interval_seconds )
+     bc_time = NINT ( (curr_secs + time_to_bc) / ( bc_interval ) ) * bc_interval
      CALL WRFU_TimeIntervalSet(tmpTimeInterval, S=bc_time)
      dtInterval = tmpTimeInterval - &
           (domain_get_current_time(grid) - domain_get_start_time(grid))
