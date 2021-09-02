@@ -884,6 +884,8 @@ state    real   DTW              ij     misc        1         -     r   "DTW"   
 # Ocean surface currents
 state    real   UOCE            ij     misc        1         -     i0124rd=(interp_mask_water_field:lu_index,iswater)  "UOCE"  "SEA SURFACE ZONAL CURRENTS" "m s-1"
 state    real   VOCE            ij     misc        1         -     i0124rd=(interp_mask_water_field:lu_index,iswater)  "VOCE"  "SEA SURFACE MERIDIONAL CURRENTS" "m s-1"
+state  integer  TIDAL_MASK      ij     misc        1         -     i01245rh0d  "TIDAL_MASK"  "WETLAND MASK 1 for wetland and 0 else" "no units"
+state    real   SSH             ij     misc        1         -     i01245rh0d=(interp_mask_field:lu_index,iswater)   "SSH"  "Sea surface height above geoid" "m"
 
 # DFI variables
 state   real   hcoeff         {ndfi} misc        1         -     -    "HCOEFF"               "initialization weights"
@@ -2509,6 +2511,8 @@ rconfig   real mp_zero_out_thresh         namelist,physics	1          1.e-8     
 rconfig   real    seaice_threshold        namelist,physics	1            100       h    "seaice_threshold"  "tsk below which which water points are set to sea ice for slab scheme"   "K"
 rconfig   logical bmj_rad_feedback        namelist,physics      max_domains  .false.   -    "if true include radiative effects of bmj clouds"  ""
 rconfig   integer sst_update              namelist,physics	1            0         h    "sst_update"  "update sst from wrflowinp file  0=no, 1=yes"   ""
+rconfig   integer tidal_update            namelist,physics	1            0         h    "tidal_update"  "update wetland from wrflowinp file  0=no, 1=yes"   ""
+rconfig   integer iswetland               namelist,physics	1            0         h    "iswetland"  "land use index of tidal wetland" ""
 
 rconfig   integer sst_skin                namelist,physics      1            0         h    "sst_skin" "calculate sst skin temperature 0=no, 1=yes"   ""
 rconfig   integer tmn_update              namelist,physics      1            0         h    "tmn_update" "update tmn from calculation  0=no, 1=yes"   ""
