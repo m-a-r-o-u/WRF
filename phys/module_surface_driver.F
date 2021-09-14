@@ -1080,7 +1080,7 @@ CONTAINS
    INTEGER, OPTIONAL, INTENT(IN ):: tidal_update
    INTEGER, OPTIONAL, INTENT(IN ):: iswetland
 
-   INTEGER, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: tidal_mask
+   REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: tidal_mask
 
    REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: lu_index
    REAL, DIMENSION( ims:ime, jms:jme ), OPTIONAL, INTENT(INOUT):: landmask
